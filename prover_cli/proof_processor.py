@@ -81,13 +81,22 @@ def log_metrics_to_csv(witness_file, metrics, start_time, end_time):
             values = [
                 [value[0], value[1]] for value in metric.get('values', [])
             ]
-            row = [
-                starting_block,
-                metric_name,
-                start_time.isoformat(),
-                end_time.isoformat(),
-                json.dumps(values)
-            ]
+            if values != []:
+                row = [
+                    starting_block,
+                    metric_name,
+                    start_time.isoformat(),
+                    end_time.isoformat(),
+                    json.dumps(values)
+                ]
+            else:
+                row = [
+                    starting_block,
+                    metric_name,
+                    start_time.isoformat(),
+                    end_time.isoformat(),
+                    "[[0,0]]"
+                ]
             writer.writerow(row)
 
 
