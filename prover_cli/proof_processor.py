@@ -78,10 +78,16 @@ def log_metrics_to_csv(witness_file, metrics, start_time, end_time):
 
         for metric in metrics:
             metric_name = metric.get('metric', {}).get('job', 'unknown_metric')
-            values = [[value[0], value[1]]
-                      for value in metric.get('values', [])]
-            row = [starting_block, metric_name, start_time.isoformat(
-            ), end_time.isoformat(), json.dumps(values)]
+            values = [
+                [value[0], value[1]] for value in metric.get('values', [])
+            ]
+            row = [
+                starting_block,
+                metric_name,
+                start_time.isoformat(),
+                end_time.isoformat(),
+                json.dumps(values)
+            ]
             writer.writerow(row)
 
 
