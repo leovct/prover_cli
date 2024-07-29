@@ -1,15 +1,19 @@
 import requests
 from urllib.parse import urlencode
 
-PROMETHEUS_URL = 'http://localhost:9090/api/v1/query_range'
+# PROMETHEUS_URL = 'http://localhost:9090/api/v1/query_range'
+PROMETHEUS_URL = 'http://prometheus-operated.kube-prometheus.svc.cluster.local:9090/api/v1/query_range'
+
 
 def test_prometheus_connection():
     try:
-        response = requests.get(PROMETHEUS_URL.replace("/query_range", "/targets"))
+        response = requests.get(
+            PROMETHEUS_URL.replace("/query_range", "/targets"))
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print("Error connecting to Prometheus:", e)
         exit(1)
+
 
 def fetch_prometheus_metrics(witness_file, start_time, end_time):
     queries = {
@@ -20,7 +24,7 @@ def fetch_prometheus_metrics(witness_file, start_time, end_time):
         'network_receive': 'node_network_receive_bytes_total',
         'network_transmit': 'node_network_transmit_bytes_total'
     }
-    
+
     metrics = []
     for name, query in queries.items():
         start_str = start_time.replace(microsecond=0).isoformat() + "Z"
@@ -36,15 +40,17 @@ def fetch_prometheus_metrics(witness_file, start_time, end_time):
         response.raise_for_status()
         data = response.json()
         metrics.append((name, data['data']['result']))
-    
+
     return metrics
+
 
 def log_metrics_to_csv(witness_file, metrics):
     import csv
     import os
     from datetime import datetime
-    
-    starting_block = os.path.basename(witness_file).replace('.witness.json', '')
+
+    starting_block = os.path.basename(
+        witness_file).replace('.witness.json', '')
     with open('metrics.csv', mode='a', newline='') as file:
         writer = csv.writer(file)
         for metric_name, metric_data in metrics:
@@ -53,4 +59,3 @@ def log_metrics_to_csv(witness_file, metrics):
                 values = [value[1] for value in metric['values']]
                 row.extend(values)
             writer.writerow(row)
-
