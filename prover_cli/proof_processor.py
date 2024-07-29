@@ -25,7 +25,7 @@ def execute_task(witness_file, previous_proof=None):
     try:
         result = subprocess.run(['sh', '-c', command],
                                 capture_output=True, text=True)
-        print(f"Command output: {result.stdout}")
+        # print(f"Command output: {result.stdout}")
         if result.stderr:
             print(f"Command error: {result.stderr}")
         return result.stdout, result.stderr if result.stderr else None
