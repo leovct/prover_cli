@@ -49,6 +49,15 @@ def process_proof(witness_file):
             proof_json = json.loads(result.stdout)
             with open(proof_file, 'w') as pf:
                 json.dump(proof_json, pf, indent=2)
+
+            # Remove the last line from the output file
+            with open(output_file, 'r') as f:
+                lines = f.readlines()
+
+            if lines:
+                with open(output_file, 'w') as f:
+                    f.writelines(lines[:-1])
+
             return proof_file
     except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
         print(f"Failed to process proof: {e}")
