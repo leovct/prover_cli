@@ -4,7 +4,8 @@ import os
 from datetime import datetime
 import csv
 
-AMQP_URI = "amqp://guest:guest@test-rabbitmq-cluster.zero.svc.cluster.local:5672"
+# AMQP_URI = "amqp://guest:guest@test-rabbitmq-cluster.zero.svc.cluster.local:5672"
+AMQP_URI = "amqp://guest:guest@test-rabbitmq-cluster.zk-evm.svc.cluster.local:5672"
 
 
 def execute_task(witness_file, previous_proof=None):
