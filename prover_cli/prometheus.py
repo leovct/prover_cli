@@ -16,13 +16,36 @@ def test_prometheus_connection():
 
 
 def fetch_prometheus_metrics(witness_file, start_time, end_time):
+    filters = '{namespace="zk-evm", pod="zk-evm-worker-.*"}'
     queries = {
-        'cpu_usage': 'rate(container_cpu_user_seconds_total[30s]) * 100',
-        'memory_usage': 'container_memory_usage_bytes',
+        # CPU usage
+        # Total CPU usage of all zk-evm worker pods in the cluster.
+        'cluster_cpu_usage': f'avg(rate(container_cpu_usage_seconds_total{filters}[1m]) * 100) by (pod)',
+        # Average CPU usage per zk-evm worker pods.
+        'pod_cpu_usage': f'sum(rate(container_cpu_usage_seconds_total{filters}[1m]) * 100)',
+
+        # Memmory usage
+        # Total memory usage of all zk-evm worker pods in the cluster.
+        'cluster_memory_bytes': f'sum(container_memory_usage_bytes{filters})',
+        # Average memory usage per zk-evm worker pod.
+        'pod_memory_bytes': f'avg(container_memory_usage_bytes{filters}) by (pod)',
+
         'disk_read': 'node_disk_read_bytes_total',
         'disk_write': 'node_disk_written_bytes_total',
-        'network_receive': 'node_network_receive_bytes_total',
-        'network_transmit': 'node_network_transmit_bytes_total'
+
+        # Network receive/transmit
+        'cluster_network_receive': f'avg(container_network_receive_bytes_total{filters}) by (pod)',
+        'pod_network_receive': f'sum(container_network_receive_bytes_total{filters})',
+
+        'cluster_network_transmit': f'avg(container_network_transmit_bytes_total{filters}) by (pod)',
+        'pod_network_transmit': f'sum(container_network_transmit_bytes_total{filters})',
+
+        # OutOfMemory (OOM) events
+        'pod_oom_events': f'sum(container_oom_events_total{filters}) by (pod)',
+
+        # Number of processes
+        # sum(container_processes{namespace="zk-evm", pod=~"zk-evm-worker-.*"}) by (pod)
+        'pod_processes': f'sum(container_processes{filters}) by (pod)',
     }
 
     metrics = []
@@ -33,14 +56,13 @@ def fetch_prometheus_metrics(witness_file, start_time, end_time):
             'query': query,
             'start': start_str,
             'end': end_str,
-            'step': '15s'
+            'step': '10s'
         }
         url = PROMETHEUS_URL + '?' + urlencode(params)
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
         metrics.append((name, data['data']['result']))
-
     return metrics
 
 
